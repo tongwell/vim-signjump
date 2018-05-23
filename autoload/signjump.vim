@@ -9,17 +9,30 @@ endfunction
 
 " Typical ':sign place' line:
 " line=25  id=3007  name=FooSign
-function! signjump#get_buffer_signs(buffer) abort
+function! signjump#get_buffer_signs(type, buffer) abort
   " Ensure :sign place can be parsed in all locales
   let l:lang_save = v:lang
   if v:lang !=# 'C'
     silent language messages C
   endif
 
-  let l:out =
-    \ filter(
-    \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
-    \ "v:val =~# '='")
+  if a:type == 'error'
+    let l:out =
+      \ filter(
+      \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
+      \ "v:val =~# 'YcmError' || v:val =~# 'ALEErrorSign'")
+  elseif a:type == 'warning'
+    let l:out =
+      \ filter(
+      \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
+      \ "v:val =~# 'YcmWarning' || v:val =~# 'ALEWarningSign'")
+  else
+    let l:out =
+      \ filter(
+      \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
+      \ "v:val =~# '='")
+  endif
+
   call map(l:out, 'v:val[4:]') " Trim indent
   call sort(l:out, {a, b ->
     \ str2nr(matchlist(a, '\vline\=(\d+)')[1]) <
@@ -38,9 +51,9 @@ function! signjump#get_sign_data(sign, item) abort
   return matchlist(a:sign, a:item.'\v\=(\d+)')[1]
 endfunction
 
-function! signjump#get_sign(line, offset, ...) abort
+function! signjump#get_sign(type, line, offset, ...) abort
   let l:count = a:0 ? a:1 : 1
-  let l:signs = signjump#get_buffer_signs(bufnr('%'))
+  let l:signs = signjump#get_buffer_signs(a:type, bufnr('%'))
   if empty(l:signs)
     return []
   endif
@@ -55,7 +68,10 @@ function! signjump#get_sign(line, offset, ...) abort
       let l:index = len(l:signs)
     endif
   endif
-  let l:index = s:bound(eval('l:index'.a:offset.'l:count'), len(l:signs))
+  let l:index = eval('l:index'.a:offset.'l:count')
+  if l:index > len(l:signs) - 1
+    return []
+  endif
   return split(l:signs[l:index], '  ')
 endfunction
 
@@ -73,31 +89,35 @@ function! signjump#jump_to_sign(sign) abort
   endif
 endfunction
 
-function! signjump#next_sign(...) abort
+function! signjump#next_sign(type, ...) abort
   let l:count = a:0 ? a:1 : 1
-  let l:sign = signjump#get_sign(line('.'), '+', l:count)
+  let l:sign = signjump#get_sign(a:type, line('.'), '+', l:count)
   if !empty(l:sign)
     call signjump#jump_to_sign(l:sign)
+  else
+    call signjump#first_sign(a:type)
   endif
 endfunction
 
-function! signjump#prev_sign(...) abort
+function! signjump#prev_sign(type, ...) abort
   let l:count = a:0 ? a:1 : 1
-  let l:sign = signjump#get_sign(line('.'), '-', l:count)
+  let l:sign = signjump#get_sign(a:type, line('.'), '-', l:count)
   if !empty(l:sign)
     call signjump#jump_to_sign(l:sign)
+  else
+    call signjump#last_sign(a:type)
   endif
 endfunction
 
-function! signjump#first_sign() abort
-  let l:signs = signjump#get_buffer_signs(bufnr('%'))
+function! signjump#first_sign(type) abort
+  let l:signs = signjump#get_buffer_signs(a:type, bufnr('%'))
   if !empty(l:signs)
     call signjump#jump_to_sign(l:signs[0])
   endif
 endfunction
 
-function! signjump#last_sign() abort
-  let l:signs = signjump#get_buffer_signs(bufnr('%'))
+function! signjump#last_sign(type) abort
+  let l:signs = signjump#get_buffer_signs(a:type, bufnr('%'))
   if !empty(l:signs)
     call signjump#jump_to_sign(l:signs[-1])
   endif

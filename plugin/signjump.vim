@@ -27,6 +27,10 @@ function! s:init_options() abort
   call extend(g:signjump, {
     \ 'map_next_sign':      ']s',
     \ 'map_prev_sign':      '[s',
+    \ 'map_next_warning_sign':      ']w',
+    \ 'map_prev_warning_sign':      '[w',
+    \ 'map_next_error_sign':      ']e',
+    \ 'map_prev_error_sign':      '[e',
     \ 'map_first_sign':     '[S',
     \ 'map_last_sign':      ']S',
     \ 'use_jumplist':       0,
@@ -37,12 +41,20 @@ call s:init_options()
 
 nnoremap <silent> <script> <Plug>SignJumpNextSign  :<C-U>call signjump#next_sign(v:count1)<CR>
 nnoremap <silent> <script> <Plug>SignJumpPrevSign  :<C-U>call signjump#prev_sign(v:count1)<CR>
+nnoremap <silent> <script> <Plug>SignJumpNextWarningSign  :<C-U>call signjump#next_sign('warning', v:count1)<CR>
+nnoremap <silent> <script> <Plug>SignJumpPrevWarningSign  :<C-U>call signjump#prev_sign('warning', v:count1)<CR>
+nnoremap <silent> <script> <Plug>SignJumpNextErrorSign  :<C-U>call signjump#next_sign('error', v:count1)<CR>
+nnoremap <silent> <script> <Plug>SignJumpPrevErrorSign  :<C-U>call signjump#prev_sign('error', v:count1)<CR>
 nnoremap <silent> <script> <Plug>SignJumpFirstSign :<C-U>call signjump#first_sign()<CR>
 nnoremap <silent> <script> <Plug>SignJumpLastSign  :<C-U>call signjump#last_sign()<CR>
 
 if get(g:signjump, 'create_mappings', 1)
   call s:map('n', g:signjump.map_next_sign, '<Plug>SignJumpNextSign', 0)
   call s:map('n', g:signjump.map_prev_sign, '<Plug>SignJumpPrevSign', 0)
+  call s:map('n', g:signjump.map_next_warning_sign, '<Plug>SignJumpNextWarningSign', 0)
+  call s:map('n', g:signjump.map_prev_warning_sign, '<Plug>SignJumpPrevWarningSign', 0)
+  call s:map('n', g:signjump.map_next_error_sign, '<Plug>SignJumpNextErrorSign', 0)
+  call s:map('n', g:signjump.map_prev_error_sign, '<Plug>SignJumpPrevErrorSign', 0)
   call s:map('n', g:signjump.map_first_sign, '<Plug>SignJumpFirstSign', 0)
   call s:map('n', g:signjump.map_last_sign, '<Plug>SignJumpLastSign', 0)
 endif
