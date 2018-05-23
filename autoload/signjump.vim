@@ -20,12 +20,13 @@ function! signjump#get_buffer_signs(type, buffer) abort
     let l:out =
       \ filter(
       \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
-      \ "v:val =~# 'YcmError' || v:val =~# 'ALEErrorSign'")
+      \ "v:val =~# 'YcmError' || v:val =~# 'ALE.*ErrorSign'")
   elseif a:type == 'warning'
     let l:out =
       \ filter(
       \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
-      \ "v:val =~# 'YcmWarning' || v:val =~# 'ALEWarningSign'")
+      \ "v:val =~# 'YcmWarning' || v:val =~# 'ALE.*WarningSign' ||
+      \ v:val =~# 'YcmError' || v:val =~# 'ALE.*ErrorSign'")
   else
     let l:out =
       \ filter(
