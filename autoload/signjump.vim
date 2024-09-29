@@ -19,18 +19,18 @@ function! signjump#get_buffer_signs(type, buffer) abort
   if a:type == 'error'
     let l:out =
       \ filter(
-      \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
+      \   split(execute('sign place group=* buffer='.a:buffer, 'silent'), '\n'),
       \ "v:val =~# 'YcmError' || v:val =~# 'ALE.*ErrorSign'")
   elseif a:type == 'warning'
     let l:out =
       \ filter(
-      \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
+      \   split(execute('sign place group=* buffer='.a:buffer, 'silent'), '\n'),
       \ "v:val =~# 'YcmWarning' || v:val =~# 'ALE.*WarningSign' ||
       \ v:val =~# 'YcmError' || v:val =~# 'ALE.*ErrorSign'")
   else
     let l:out =
       \ filter(
-      \   split(execute('sign place buffer='.a:buffer, 'silent'), '\n'),
+      \   split(execute('sign place group=* buffer='.a:buffer, 'silent'), '\n'),
       \ "v:val =~# '='")
   endif
 
@@ -49,7 +49,7 @@ function! signjump#get_buffer_signs(type, buffer) abort
 endfunction
 
 function! signjump#get_sign_data(sign, item) abort
-  return matchlist(a:sign, a:item.'\v\=(\d+)')[1]
+  return matchlist(a:sign, a:item.'\v\=(\w+)')[1]
 endfunction
 
 function! signjump#get_sign(type, line, offset, ...) abort
@@ -81,8 +81,15 @@ function! signjump#jump_to_sign(sign) abort
   if g:signjump.use_jumplist
     execute 'normal!' signjump#get_sign_data(a:sign, 'line') . 'G'
   else
-    execute 'sign jump' signjump#get_sign_data(a:sign, 'id')
-      \ 'buffer=' . bufnr('%')
+    let group = signjump#get_sign_data(a:sign, 'group')
+    if empty(group)
+      execute 'sign jump' signjump#get_sign_data(a:sign, 'id')
+        \ 'buffer=' . bufnr('%')
+    else
+      execute 'sign jump' signjump#get_sign_data(a:sign, 'id')
+        \ 'group=' . group
+        \ 'buffer=' . bufnr('%')
+    endif
   endif
 
   if g:signjump.debug
